@@ -30,11 +30,8 @@ import javax.microedition.khronos.opengles.GL10;
 
 import net.rbgrn.android.glwallpaperservice.BaseConfigChooser.ComponentSizeChooser;
 import net.rbgrn.android.glwallpaperservice.BaseConfigChooser.SimpleEGLConfigChooser;
-import android.opengl.GLSurfaceView.EGLConfigChooser;
-import android.opengl.GLSurfaceView.EGLContextFactory;
-import android.opengl.GLSurfaceView.EGLWindowSurfaceFactory;
-import android.opengl.GLSurfaceView.GLWrapper;
-import android.opengl.GLSurfaceView.Renderer;
+import net.rbgrn.android.glwallpaperservice.GLWallpaperService.Renderer;
+import android.opengl.GLSurfaceView;
 import android.service.wallpaper.WallpaperService;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -193,6 +190,10 @@ public class GLWallpaperService extends WallpaperService {
 			}
 		}
 	}
+
+	public interface Renderer extends GLSurfaceView.Renderer {
+
+	}
 }
 
 class LogWriter extends Writer {
@@ -230,6 +231,17 @@ class LogWriter extends Writer {
 
 // ----------------------------------------------------------------------
 
+/**
+ * An interface for customizing the eglCreateContext and eglDestroyContext calls.
+ *
+
+ * This interface must be implemented by clients wishing to call
+ * {@link GLWallpaperService#setEGLContextFactory(EGLContextFactory)}
+ */
+interface EGLContextFactory extends GLSurfaceView.EGLContextFactory {
+
+}
+
 class DefaultContextFactory implements EGLContextFactory {
 
 	public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig config) {
@@ -239,6 +251,17 @@ class DefaultContextFactory implements EGLContextFactory {
 	public void destroyContext(EGL10 egl, EGLDisplay display, EGLContext context) {
 		egl.eglDestroyContext(display, context);
 	}
+}
+
+/**
+ * An interface for customizing the eglCreateWindowSurface and eglDestroySurface calls.
+ *
+
+ * This interface must be implemented by clients wishing to call
+ * {@link GLWallpaperService#setEGLWindowSurfaceFactory(EGLWindowSurfaceFactory)}
+ */
+interface EGLWindowSurfaceFactory extends GLSurfaceView.EGLWindowSurfaceFactory {
+
 }
 
 class DefaultWindowSurfaceFactory implements EGLWindowSurfaceFactory {
@@ -267,6 +290,10 @@ class DefaultWindowSurfaceFactory implements EGLWindowSurfaceFactory {
 	public void destroySurface(EGL10 egl, EGLDisplay display, EGLSurface surface) {
 		egl.eglDestroySurface(display, surface);
 	}
+}
+
+interface GLWrapper extends GLSurfaceView.GLWrapper {
+
 }
 
 class EglHelper {
@@ -797,6 +824,10 @@ class GLThread extends Thread {
 			notifyAll();
 		}
 	}
+}
+
+interface EGLConfigChooser extends GLSurfaceView.EGLConfigChooser {
+
 }
 
 abstract class BaseConfigChooser implements EGLConfigChooser {
